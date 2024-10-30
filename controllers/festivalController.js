@@ -2,19 +2,7 @@
 const Festival = require('../models/Festival');
 
 // Get today's festival
-exports.getTodayFestival = async (req, res) => {
-    const today = new Date().toISOString().split('T')[0];
-    try {
-        const festival = await Festival.findOne({ date: today });
-        if (festival) {
-            res.status(200).json({ festival: festival.name , shortdescription, description });
-        } else {
-            res.status(200).json({ message: 'No festival today.' });
-        }
-    } catch (error) {
-        res.status(500).json({ error: 'Server error' });
-    }
-};
+exports.getTodayFestival =
 
 // Add new festival data
 // exports.addFestival = async (req, res) => {
