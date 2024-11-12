@@ -2,7 +2,7 @@
 const express = require("express");
 const router = express.Router();
 const Festival = require("../models/Festival");
-const Puro = require("../models/purohit");
+const Purohit = require("../models/purohit");
 
 // Route to get today's festival
 // router.get('/today', festivalController.getTodayFestival);
