@@ -3,6 +3,8 @@ const express = require("express");
 const router = express.Router();
 const Festival = require("../models/Festival");
 const Purohit = require("../models/purohit");
+const Product = require("../models/Product");
+const addcart = require("../models/addcart");
 
 // Route to get today's festival
 // router.get('/today', festivalController.getTodayFestival);
@@ -76,13 +78,28 @@ router.put("/update/:id", async (req, res) => {
 router.get("/date/:date", async (req, res) => {
   const { date } = req.params; // Extract date from request parameters
   try {
-    const festivals = await Festival.find({ date }); // Query the database
+    // Query for festivals on the provided date
+    let festivals = await Festival.find({ date }).sort({ date: 1 });
+
+    // If no festivals found for the given date
     if (festivals.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "No festivals found for this date." });
+      // Find the next available festival after the provided date
+      festivals = await Festival.find({ date: { $gt: date } }).sort({ date: 1 }).limit(1);
+
+      // If still no festivals found, return an appropriate response
+      if (festivals.length === 0) {
+        return res.status(404).json({ message: "No festivals found for the given or upcoming dates." });
+      }
+
+      // Return the next available festival
+      return res.status(200).json({
+        message: "No festivals found for the given date. Here is the next available festival:",
+        festival: festivals[0],
+      });
     }
-    res.status(200).json(festivals); // Return the found festivals
+
+    // Return the festivals for the given date
+    res.status(200).json(festivals);
   } catch (error) {
     console.error("Error fetching festivals:", error);
     res
@@ -90,6 +107,7 @@ router.get("/date/:date", async (req, res) => {
       .json({ error: "Error fetching festival data", details: error.message });
   }
 });
+
 
 // Route to get all festivals
 router.get("/purohit", async (req, res) => {
@@ -184,5 +202,110 @@ router.delete("/purohits/:id", async (req, res) => {
       .json({ error: "Error deleting Purohit", details: error.message });
   }
 });
+
+/// Route to add a new product
+router.post("/addproducts", async (req, res) => {
+  const { category, collection, productname, sizes, price, vendor } = req.body;
+  console.log("Received data:", req.body); // Log incoming data
+  try {
+    // Validate input data
+    if (!category || !collection || !productname || !sizes || !price || !vendor) {
+      return res.status(400).json({ error: "All fields are required." });
+    }
+
+    const newProduct = new Product({
+      category,
+      collection,
+      productname,
+      sizes,
+      price,
+      vendor,
+    });
+    await newProduct.save();
+    res
+      .status(201)
+      .json({ message: "Product added successfully", product: newProduct });
+  } catch (error) {
+    console.error("Error adding product:", error);
+    res
+      .status(500)
+      .json({ error: "Error adding product data", details: error.message });
+  }
+});
+
+
+// Route to get products by category
+router.get("/products/:category", async (req, res) => {
+  const { category } = req.params;
+  try {
+    const products = await Product.find({ category: category });
+    if (products.length === 0) {
+      return res.status(404).json({ message: "No products found for this category." });
+    }
+    res.status(200).json(products);
+  } catch (error) {
+    console.error("Error fetching products by category:", error);
+    res
+      .status(500)
+      .json({ error: "Error fetching products", details: error.message });
+  }
+});
+
+
+router.get('/getproducts/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const product = await Product.findById(id);
+
+    if (!product) {
+      return res.status(404).json({
+        responseCode: 404,
+        message: 'Product not found.',
+      });
+    }
+
+    res.status(200).json({
+      responseCode: 200,
+      message: 'Product retrieved successfully',
+      product, // Include the product data
+    });
+  } catch (error) {
+    console.error('Error fetching product:', error);
+    res.status(500).json({
+      responseCode: 500,
+      message: 'Error fetching product',
+      details: error.message,
+    });
+  }
+});
+
+/// Route to add a new product
+router.post("/addcart", async (req, res) => {
+  const { productId, addquantity} = req.body;
+  console.log("Received data:", req.body); // Log incoming data
+  try {
+    // Validate input data
+    if (!productId || !addquantity ) {
+      return res.status(400).json({ error: "All fields are required." });
+    }
+
+    const newaddcart = new addcart({
+      productId,
+      addquantity
+    });
+    await newaddcart.save();
+    res
+      .status(201)
+      .json({ message: "cart added successfully", addcart: addcart });
+  } catch (error) {
+    console.error("Error adding cart:", error);
+    res
+      .status(500)
+      .json({ error: "Error adding cart data", details: error.message });
+  }
+});
+
+
 
 module.exports = router;
