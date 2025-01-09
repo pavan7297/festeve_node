@@ -5,6 +5,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const festivalRoutes = require('./routes/festivalRoutes');
 const bodyParser = require('body-parser');
+const bcrypt = require("bcryptjs");
 
 const corsOptions = {
     origin: '*', // Not recommended for production
