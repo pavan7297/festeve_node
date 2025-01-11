@@ -6,6 +6,7 @@ const Festival = require("../models/Festival");
 const Purohit = require("../models/purohit");
 const Product = require("../models/Product");
 const addcart = require("../models/addcart");
+const essentilas = require("../models/essentilas");
 const userSchema = require("../models/userSchema");
 
 // Route to get today's festival
@@ -234,6 +235,66 @@ router.post("/addproducts", async (req, res) => {
       .json({ error: "Error adding product data", details: error.message });
   }
 });
+/// Route to add a new product
+router.post("/addwomenproducts", async (req, res) => {
+  const { category, collection, productname, sizes, price, vendor } = req.body;
+  console.log("Received data:", req.body); // Log incoming data
+  try {
+    // Validate input data
+    if (!category || !collection || !productname || !sizes || !price || !vendor) {
+      return res.status(400).json({ error: "All fields are required." });
+    }
+
+    const newProduct = new Product({
+      category,
+      collection,
+      productname,
+      sizes,
+      price,
+      vendor,
+    });
+    await newProduct.save();
+    res
+      .status(201)
+      .json({ message: "Product added successfully", product: newProduct });
+  } catch (error) {
+    console.error("Error adding product:", error);
+    res
+      .status(500)
+      .json({ error: "Error adding product data", details: error.message });
+  }
+});
+/// Route to add a new product
+router.post("/addchildproducts", async (req, res) => {
+  const { category, collection, productname, sizes, price, vendor } = req.body;
+  console.log("Received data:", req.body); // Log incoming data
+  try {
+    // Validate input data
+    if (!category || !collection || !productname || !sizes || !price || !vendor) {
+      return res.status(400).json({ error: "All fields are required." });
+    }
+
+    const newProduct = new Product({
+      category,
+      collection,
+      productname,
+      sizes,
+      price,
+      vendor,
+    });
+    await newProduct.save();
+    res
+      .status(201)
+      .json({ message: "Product added successfully", product: newProduct });
+  } catch (error) {
+    console.error("Error adding product:", error);
+    res
+      .status(500)
+      .json({ error: "Error adding product data", details: error.message });
+  }
+});
+
+
 
 
 // Route to get products by category
@@ -309,6 +370,35 @@ router.post("/addcart", async (req, res) => {
 });
 
 
+router.post("/addessentproducts", async (req, res) => {
+  const { category, collection, productname, price, vendor } = req.body;
+  console.log("Received data:", req.body); // Log incoming data
+  try {
+    // Validate input data
+    if (!category || !collection || !productname|| !price || !vendor) {
+      return res.status(400).json({ error: "All fields are required." });
+    }
+
+    const newProduct = new essentilas({
+      category,
+      collection,
+      productname,
+      price,
+      vendor,
+    });
+    await newProduct.save();
+    res
+      .status(201)
+      .json({ message: "Product added successfully", product: newProduct });
+  } catch (error) {
+    console.error("Error adding product:", error);
+    res
+      .status(500)
+      .json({ error: "Error adding product data", details: error.message });
+  }
+});
+
+
 
 
 router.post("/signup", async (req, res) => {
@@ -342,7 +432,7 @@ router.post("/signup", async (req, res) => {
     }
 
     // Check if the user already exists
-    const existingUser = await User.findOne({ emailid });
+    const existingUser = await userSchema.findOne({ emailid });
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     }
@@ -365,7 +455,7 @@ router.post("/signup", async (req, res) => {
 
     // Save the user to the database
     await newUser.save();
-    res.status(201).json({ message: "User signed up successfully!" });
+    res.status(201).json({ responseCode: 201, message: "User signed up successfully!" });
   } catch (error) {
     console.error("Error during signup:", error);
     res.status(500).json({ message: "Internal Server Error" });
@@ -399,6 +489,7 @@ router.post("/login", async (req, res) => {
 
     // Login successful, return user id and status code
     res.status(200).json({
+      responseCode: 200,
       message: "Login successful",
       userId: userschema._id,
     });
